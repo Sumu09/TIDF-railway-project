@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block html_attribute %}{% endblock html_attribute %}
+
+{% block title %}{% endblock title %}
+
+{% block extra_css %}{% endblock extra_css %}
+
+{% block body_attribute %}{% endblock body_attribute %}
+
+{% block content %}
+
+{% block preloader %}{% endblock preloader %}
+
+<div class="wrapper">
+    <!-- Debug info -->
+    <!-- User type: {{ user_type }} -->
+
+    {% if user_type == "station-admin" %}
+    {% include 'partials/topbar-station-admin.html' %}
+    {% include 'partials/sidenav-station-admin.html' %}
+    {% elif user_type == "ground-staff" %}
+    {% include 'partials/topbar-ground-staff.html' %}
+    {% include 'partials/sidenav-ground-staff.html' %}
+    {% elif user_type == "zonal-head" %}
+    {% include 'partials/topbar-ground-staff.html' %}
+    {% include 'partials/sidenav-ground-staff.html' %}
+    {% else %}
+    {% include 'partials/topbar.html' %}
+    {% include 'partials/sidenav.html' %}
+    {% endif %}
+
+    <div class="page-content" style="margin-left: 0 !important;">
+
+        <div class="page-container">
+
+            {% block page_title %}{% endblock page_title %}
+
+            {% block page_content %}{% endblock page_content %}
+        </div>
+
+        {% include 'partials/footer.html' %}
+    </div>
+</div>
+
+{% include 'partials/customizer.html' %}
+
+{% include 'partials/footer-scripts.html' %}
+
+{% block modal %}{% endblock modal %}
+
+{% endblock content %}
+
+{% block extra_javascript %}{% endblock extra_javascript %}

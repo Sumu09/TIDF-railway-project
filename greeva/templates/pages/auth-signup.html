@@ -1,0 +1,548 @@
+{% extends 'vertical.html' %}
+{% load static i18n %}
+{% block title %}Sign up{% endblock title %}
+{% block content %}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #232a3b;
+        min-height: 100vh;
+        font-family: 'Inter', Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-bg {
+        min-height: 100vh;
+        width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #232a3b;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 32px rgba(44, 62, 80, 0.08);
+        padding: 40px 32px 24px 32px;
+        max-width: 480px;
+        width: 100%;
+        margin: 32px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .auth-brand {
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+
+    }
+
+    .auth-brand img {
+        height: 80px;
+        /* Increased size */
+        margin-right: 8px;
+        transition: height 0.2s;
+    }
+
+    .auth-brand h2 {
+        font-family: 'Inter', Arial, sans-serif;
+        font-weight: 600;
+        font-size: 2rem;
+        margin-bottom: 0;
+        color: #2d3a4a;
+    }
+
+    .fw-semibold {
+        font-weight: 600;
+    }
+
+    .fs-18 {
+        font-size: 1.25rem;
+    }
+
+    .mb-2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #2d3a4a;
+        font-size: 0.98rem;
+    }
+
+    .form-control,
+    select {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid #e5e9f2;
+        border-radius: 6px;
+        background: #f8fafc;
+        font-size: 1rem;
+        color: #2d3a4a;
+        outline: none;
+        transition: border 0.2s;
+        margin-bottom: 0;
+    }
+
+    .form-control:focus,
+    select:focus {
+        border-color: #3399ff;
+        background: #fff;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        font-size: 0.97rem;
+    }
+
+    .form-check-input {
+        margin-right: 8px;
+        accent-color: #3399ff;
+        width: 18px;
+        height: 18px;
+    }
+
+    .form-check-label a {
+        color: #2d3a4a;
+        text-decoration: underline;
+    }
+
+    .d-grid {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px 0;
+        background: #2196f3;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.08rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn:hover {
+        background: #1769aa;
+    }
+
+    .text-nuted {
+        color: #7a869a;
+    }
+
+    .fs-14 {
+        font-size: 0.95rem;
+    }
+
+    .text-danger {
+        color: #ff3b3b !important;
+        text-decoration: none;
+    }
+
+    .fw-semibold {
+        font-weight: 600;
+    }
+
+    .ms-1 {
+        margin-left: 3px;
+    }
+
+    .mb-0 {
+        margin-bottom: 0;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-start {
+        text-align: left;
+        width: 100%;
+    }
+
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+
+    .copyright {
+        color: #7a869a;
+        font-size: 0.93rem;
+        margin-top: 18px;
+        text-align: center;
+    }
+
+    .copyright a {
+        color: #2d3a4a;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    @media (max-width: 500px) {
+        .card {
+            padding: 24px 8px 18px 8px;
+            max-width: 98vw;
+        }
+
+        .auth-brand img {
+            height: 56px;
+        }
+    }
+</style>
+
+<body>
+    <div class="auth-bg">
+        <div class="card text-center">
+            <a href="/" class="auth-brand mb-4 text-decoration-none">
+                <img src="{% static '/images/IITG_logo_dark.png' %}" alt="dark logo" class="logo-dark">
+                <h2>IIT Guwahati</h2>
+            </a>
+            <h4 class="fw-semibold mb-2 fs-18">Sign Up</h4>
+            <form action="/" class="text-start mb-3">
+                <div class="mb-3">
+                    <label class="form-label" for="example-name">Name</label>
+                    <input type="text" id="example-name" name="example-name" class="form-control"
+                        placeholder="Enter your name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="example-phone">Phone number</label>
+                    <input type="tel" id="example-phone" name="example-phone" class="form-control"
+                        placeholder="Enter your Phone Number" maxlength="10" required />
+                    <div class="invalid-feedback" id="phone-error">
+                        Please enter a valid 10-digit phone number.
+                    </div>
+                    <div class="valid-feedback">
+                        Phone number is correct!
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="station-name">Station Name</label>
+                    <select id="station-name" name="station-name" class="form-control">
+                        <option value="">Select Station</option>
+                        <!-- Stations will be populated by JS -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="user-type">Type of User</label>
+                    <select id="user-type" name="user-type" class="form-control">
+                        <option value="">Select User Type</option>
+                        <option value="GroundStaff">Ground Staff</option>
+                        <option value="StationAdmin">Station Admin</option>
+                        <option value="ZonalHead">Zonal Head</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="example-password">Password</label>
+                    <input type="password" id="example-password" name="example-password" class="form-control"
+                        placeholder="Enter your password" required />
+                    <div class="alert alert-warning mt-2 py-2 px-3" id="password-warning"
+                        style="display: none; font-size: 0.8rem;">
+                        <i class="ti ti-alert-triangle me-1"></i>
+                        Password must be at least 8 characters, contain 1 uppercase, 1 lowercase, 1 number, and 1
+                        special character.
+                    </div>
+                    <div class="valid-feedback" id="password-ok" style="display: none;">
+                        <i class="ti ti-circle-check me-1"></i> Password is okay!
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" class="form-control"
+                        placeholder="Confirm your password">
+                    <div class="alert alert-warning mt-2 py-2 px-3" id="confirm-password-warning"
+                        style="display: none; font-size: 0.8rem;">
+                        <i class="ti ti-alert-triangle me-1"></i>
+                        Passwords do not match.
+                    </div>
+                    <div class="valid-feedback" id="confirm-password-ok" style="display: none;">
+                        <i class="ti ti-circle-check me-1"></i> Password is matching!
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-primary fw-semibold" type="submit">Sign Up</button>
+                </div>
+            </form>
+            <p class="text-nuted fs-14 mb-4">
+                Already have an account?
+                <a href="{% url 'pages:dashboard' %}" class="fw-semibold text-danger ms-1">Login !</a>
+            </p>
+
+            <p class="mt-3 mb-0">
+                <script>document.write(new Date().getFullYear())</script> © <span
+                    class="fw-bold text-decoration-underline text-uppercase text-reset fs-15">IITG</span>
+            </p>
+
+        </div>
+    </div>
+</body>
+
+
+<script src="{% static '/js/utils/jwt-auth.js' %}"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Dynamically populate stations
+        const stationSelect = document.getElementById("station-name");
+        fetch("http://127.0.0.1:5000/stations")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success" && Array.isArray(data.stations)) {
+                    data.stations.forEach(station => {
+                        const opt = document.createElement("option");
+                        opt.value = station.Station_Code;
+                        opt.textContent = `${station.Station_Name} (${station.Station_Code}) - ${station.zone}`;
+                        stationSelect.appendChild(opt);
+                    });
+                }
+            });
+
+        // Hide station dropdown if Zonal Head is selected
+        const userTypeSelect = document.getElementById("user-type");
+        const stationDiv = stationSelect.closest(".mb-3");
+        function toggleStationDropdown() {
+            if (userTypeSelect.value === "ZonalHead") {
+                stationDiv.style.display = "none";
+            } else {
+                stationDiv.style.display = "";
+            }
+        }
+        userTypeSelect.addEventListener("change", toggleStationDropdown);
+        toggleStationDropdown();
+        const phoneInput = document.getElementById("example-phone");
+        const passwordInput = document.getElementById("example-password");
+        const confirmPasswordInput = document.getElementById("confirm-password");
+        const phoneError = document.getElementById("phone-error");
+        const passwordWarning = document.getElementById("password-warning");
+        const passwordOk = document.getElementById("password-ok");
+        const confirmPasswordWarning = document.getElementById("confirm-password-warning");
+        const confirmPasswordOk = document.getElementById("confirm-password-ok");
+        let phoneValidationTimeout;
+        let passwordValidationTimeout;
+        let confirmPasswordValidationTimeout;
+
+        // Phone number input validation
+        phoneInput.addEventListener('input', function () {
+            const phoneValue = this.value.replace(/\D/g, '').substring(0, 10);
+            this.value = phoneValue;
+            this.classList.remove('is-valid', 'is-invalid');
+            clearTimeout(phoneValidationTimeout);
+            phoneValidationTimeout = setTimeout(() => {
+                validatePhoneNumber();
+            }, 800);
+        });
+        phoneInput.addEventListener('blur', function () {
+            clearTimeout(phoneValidationTimeout);
+            validatePhoneNumber();
+        });
+        function validatePhoneNumber() {
+            const phoneValue = phoneInput.value.replace(/\D/g, '');
+            if (phoneValue.length === 0) {
+                phoneInput.classList.remove('is-valid', 'is-invalid');
+            } else if (phoneValue.length === 10) {
+                phoneInput.classList.remove('is-invalid');
+                phoneInput.classList.add('is-valid');
+            } else {
+                phoneInput.classList.remove('is-valid');
+                phoneInput.classList.add('is-invalid');
+            }
+        }
+
+        // Password input validation
+        passwordInput.addEventListener('input', function () {
+            this.classList.remove('is-valid', 'is-invalid');
+            clearTimeout(passwordValidationTimeout);
+            passwordValidationTimeout = setTimeout(() => {
+                validatePassword();
+            }, 300);
+        });
+        passwordInput.addEventListener('blur', function () {
+            clearTimeout(passwordValidationTimeout);
+            validatePassword();
+        });
+        function validatePassword() {
+            const password = passwordInput.value;
+            // Password requirements
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            const isValid = hasLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
+            if (password.length === 0) {
+                passwordInput.classList.remove('is-valid', 'is-invalid');
+                passwordWarning.style.display = 'none';
+                passwordOk.style.display = 'none';
+                return;
+            }
+            if (isValid) {
+                passwordInput.classList.remove('is-invalid');
+                passwordInput.classList.add('is-valid');
+                passwordWarning.style.display = 'none';
+                passwordOk.style.display = 'block';
+            } else {
+                passwordInput.classList.remove('is-valid');
+                passwordInput.classList.add('is-invalid');
+                passwordWarning.style.display = 'block';
+                passwordOk.style.display = 'none';
+            }
+        }
+
+        // Confirm password input validation
+        confirmPasswordInput.addEventListener('input', function () {
+            this.classList.remove('is-valid', 'is-invalid');
+            clearTimeout(confirmPasswordValidationTimeout);
+            confirmPasswordValidationTimeout = setTimeout(() => {
+                validateConfirmPassword();
+            }, 300);
+        });
+        confirmPasswordInput.addEventListener('blur', function () {
+            clearTimeout(confirmPasswordValidationTimeout);
+            validateConfirmPassword();
+        });
+        passwordInput.addEventListener('input', function () {
+            // Also revalidate confirm password if password changes
+            validateConfirmPassword();
+        });
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            if (confirmPassword.length === 0) {
+                confirmPasswordInput.classList.remove('is-valid', 'is-invalid');
+                confirmPasswordWarning.style.display = 'none';
+                confirmPasswordOk.style.display = 'none';
+                return;
+            }
+            if (password === confirmPassword) {
+                confirmPasswordInput.classList.remove('is-invalid');
+                confirmPasswordInput.classList.add('is-valid');
+                confirmPasswordWarning.style.display = 'none';
+                confirmPasswordOk.style.display = 'block';
+            } else {
+                confirmPasswordInput.classList.remove('is-valid');
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordWarning.style.display = 'block';
+                confirmPasswordOk.style.display = 'none';
+            }
+        }
+
+        // Signup form submission as JSON
+        const signupForm = document.querySelector("form.text-start.mb-3");
+        // Add this at the top if using jwt-encode from CDN
+        // const jwt_encode = window.jwt_encode;
+
+        signupForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            // Collect form values
+            const name = document.getElementById("example-name").value.trim();
+            const phone = document.getElementById("example-phone").value.trim();
+            const station = document.getElementById("station-name").value;
+            const userType = document.getElementById("user-type").value;
+            const password = document.getElementById("example-password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+
+            // Basic validation
+            if (!name || !phone || !station || !userType || !password || !confirmPassword) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            // Create the payload to match your backend expectations
+            const payload = {
+                Name: name,
+                Ph_No: parseInt(phone),
+                Station_Code: station,
+                Type_of_User: userType,
+                Password: password
+            };
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                console.log("Signup response:", data);
+
+                if (response.ok) {
+                    console.log("Signup successful, saving token:", data.access_token);
+
+                    // Save JWT to localStorage using consistent key
+                    JWT_AUTH.setToken(data.access_token);
+
+                    // Verify token was saved
+                    console.log("Token saved, verifying:", localStorage.getItem("authToken"));
+                    console.log("JWT_AUTH.isAuthenticated():", JWT_AUTH.isAuthenticated());
+
+                    // Show success message
+                    alert("Account created successfully! Redirecting...");
+
+                    // Redirect based on user type from backend
+                    const userType = data.user.Type_of_User;
+                    let redirectUrl;
+                    switch (userType) {
+                        case 'GroundStaff':
+                            redirectUrl = "{% url 'pages:dynamic_pages' template_name='ground-staff' %}";
+                            break;
+                        case 'StationAdmin':
+                            redirectUrl = "{% url 'pages:dynamic_pages' template_name='station-admin' %}";
+                            break;
+                        case 'ZonalHead':
+                            redirectUrl = "{% url 'pages:dynamic_pages' template_name='zonal-head' %}";
+                            break;
+                        default:
+                            redirectUrl = "{% url 'pages:dynamic_pages' template_name='pages-404' %}";
+                    }
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                } else {
+                    console.error("Signup failed:", data);
+                    alert(data.error || "Signup failed.");
+                }
+            } catch (err) {
+                console.error("Signup error:", err);
+                alert("Network error. Please try again.");
+            }
+        });
+    });
+
+</script>
+
+{% endblock content %}

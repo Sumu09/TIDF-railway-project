@@ -1,0 +1,668 @@
+{% extends 'vertical.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard{% endblock title %}
+{% include 'partials/topbar-ground-staff.html' %}
+{% include 'partials/sidenav-ground-staff.html' %}
+
+{% block extra_css %}
+
+<!-- <style>
+  .gridjs .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-color: #0d6efd !important;
+  }
+</style>
+<style>
+  /* Fix overlap of Grid.js search icon and input text */
+  .gridjs .gridjs-search input {
+    padding-left: 2rem !important;
+    /* Add spacing between icon and text */
+  }
+
+  .gridjs .gridjs-search svg {
+    left: 0.6rem !important;
+    /* Move icon slightly right */
+  }
+</style> -->
+
+<link href="{% static '/vendor/jsvectormap/jsvectormap.min.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block page_title %}
+{% include 'partials/page-title.html' with title="Station Admin Page" %}
+{% endblock page_title %}
+
+{% block page_content %}
+
+<div class="container-fluid">
+  <div class="row g-4">
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Finished Report</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownFinished">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="updateCard('finished', 'This week')">This week</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('finished', 'This month')">This month</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('finished', 'This year')">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:case-round-minimalistic-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="finished-count">10</h3>
+            <iconify-icon icon="solar:cart-2-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3 ">
+              <span id="finished-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 9.19%
+              </span>
+              <span id="finished-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Alerts Processed / Alerts Pending</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownAlerts">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="updateCard('alerts', 'This week')">This week</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('alerts', 'This month')">This month</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('alerts', 'This year')">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:bill-list-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="alerts-count-display">40 / 10</h3>
+            <iconify-icon icon="solar:banknote-2-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3">
+              <span id="alerts-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 34.19%
+              </span>
+              <span id="alerts-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Cases Completed / Cases Initiated</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownCases">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="updateCard('cases', 'This week')">This week</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('cases', 'This month')">This month</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateCard('cases', 'This year')">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:wallet-money-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="cases-count">20 / 10</h3>
+            <iconify-icon icon="solar:cardholder-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3 ">
+              <span id="cases-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 23.19%
+              </span>
+              <span id="cases-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="mb-3">
+        <label for="station-select" class="form-label fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1rem;">Select
+          Station</label><br>
+        <select id="station-select" class="  form-select-sm" aria-label="Select Station">
+          <option selected disabled>Loading stations...</option>
+        </select>
+      </div>
+
+      <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+      <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+      <div class="mb-3">
+        <h5 class="fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1.1rem;">Train
+          Report Table</h5>
+      </div>
+
+      <div id="table-gridjs"></div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="mb-3">
+        <h5 class="fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1.1rem;">Station Map
+        </h5>
+      </div>
+      <div id="map" style="height: 500px; width: 100%;"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  function handleRemarksInput(element) {
+    const currentText = element.innerText === "Click to add" ? "" : element.innerText;
+    const input = prompt("Enter remark:", currentText);
+    if (input !== null) {
+      // You'll need to send this update back to your Flask backend.
+      // For now, this just updates the UI.
+      element.innerText = input;
+
+      // To update the backend, you'd typically need more information
+      // like the primary key of the row (e.g., SI_No, Date, Train_Name).
+      // This example assumes you have Date and Train_Name from the row.
+      const row = element.closest('tr'); // Get the parent table row
+      const date = row.cells[0].innerText; // Assuming Date is in the first column
+      const trainName = row.cells[2].innerText; // Assuming Train Name is in the third column
+
+      fetch('http://127.0.0.1:5001/update-remark', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Date: date,
+          Train_Name: trainName,
+          Remarks: input
+        }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            console.log("Remark updated successfully:", data.message);
+            // Optionally, you could re-fetch data or show a success message
+          } else {
+            console.error("Error updating remark:", data.message);
+            alert("Failed to update remark: " + data.message);
+            // Revert UI if update failed
+            element.innerText = currentText;
+          }
+        })
+        .catch((error) => {
+          console.error('Network or server error:', error);
+          alert("Network or server error while updating remark.");
+          // Revert UI if update failed
+          element.innerText = currentText;
+        });
+    }
+  }
+
+  let trainReportGrid; // Declare a global variable to hold the Grid.js instance
+
+  function fetchAndRenderTrainReport(period = 'week') {
+    const apiUrl = `http://127.0.0.1:5001/train-report/${period}`;
+
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === "success" && Array.isArray(data.data)) {
+          const processedData = data.data.map(item => [
+            item.Date,
+            item.Train_Status,
+            item.Train_Name,
+            item.Time,
+            item.Remarks,
+            "" // Placeholder for "Generate a case" checkbox
+          ]);
+
+          // If grid already exists, update its data
+          if (trainReportGrid) {
+            trainReportGrid.updateConfig({
+              data: processedData
+            }).forceRender();
+          } else {
+            // Otherwise, create a new grid instance
+            trainReportGrid = new gridjs.Grid({
+              columns: [{
+                name: 'Date',
+                width: '100px',
+                formatter: (function (cell) {
+                  return gridjs.html('<span class="fw-semibold">' + cell + '</span>');
+                })
+              },
+              {
+                name: 'Status',
+                width: '180px',
+              },
+              {
+                name: 'Train Name',
+                width: '200px',
+                formatter: (function (cell) {
+                  return gridjs.html('<a href="">' + cell + '</a>');
+                })
+              },
+              {
+                name: 'Time',
+                width: '130px',
+              },
+              {
+                name: 'Remarks',
+                width: '180px',
+                formatter: (cell, row) => gridjs.html(`
+                  <span style="cursor: pointer;" onclick="handleRemarksInput(this)">
+                      ${cell || '<i>Click to add</i>'}
+                  </span>
+                `)
+              },
+              {
+                name: 'Generate a case',
+                width: '150px',
+                formatter: () => gridjs.html('<input type="checkbox" />')
+              },
+              ],
+              pagination: {
+                limit: 5
+              },
+              sort: true,
+              search: true,
+              data: processedData
+            }).render(document.getElementById("table-gridjs"));
+          }
+
+        } else {
+          console.error("API response indicates an error or unexpected data structure:", data);
+          alert("Failed to load train report data: " + (data.message || "Unknown error"));
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching train report data:", error);
+        alert("Could not load train report data. Make sure the backend server is running and accessible.");
+      });
+  }
+
+
+  // Initial fetch and render when the page loads
+  document.addEventListener('DOMContentLoaded', function () {
+    fetchAndRenderTrainReport('week'); // Load weekly data by default
+
+    // Also handle the initial population of the Finished Report, Alerts, and Cases cards
+    updateCard('finished', 'This month');
+    updateCard('alerts', 'This month');
+    updateCard('cases', 'This month');
+    updateNotificationCount();
+  });
+
+
+</script>
+
+
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<script src="{% static '/vendor/apexcharts/apexcharts.min.js' %}"></script>
+
+<script src="{% static '/vendor/jsvectormap/jsvectormap.min.js' %}"></script>
+<script src="{% static '/vendor/jsvectormap/maps/world-merc.js' %}"></script>
+<script src="{% static '/vendor/jsvectormap/maps/world.js' %}"></script>
+
+<script src="{% static '/js/pages/dashboard.js' %}"></script>
+
+<script>
+  function updateCard(cardType, period) {
+    let apiUrl;
+    let countElementId;
+    let percentElementId;
+    let periodTextElementId;
+    let dropdownId;
+
+    switch (cardType) {
+      case 'finished':
+        apiUrl = `http://127.0.0.1:5001/report-summary/${period.toLowerCase().replace('this ', '')}`;
+        countElementId = 'finished-count';
+        percentElementId = 'finished-percent'; // This card only shows finished count
+        periodTextElementId = 'finished-period';
+        dropdownId = 'dropdownFinished';
+        break;
+      case 'alerts':
+        apiUrl = 'http://127.0.0.1:5001/report-summary/daily'; // This endpoint gives processed and pending
+        countElementId = 'alerts-count-display';
+        percentElementId = 'alerts-percent';
+        periodTextElementId = 'alerts-period';
+        dropdownId = 'dropdownAlerts';
+        break;
+      case 'cases':
+        // No direct "cases completed/initiated" summary endpoint found in Merged.py that aligns with period filtering.
+        // You might need to add a new endpoint in Merged.py for this.
+        // For now, we'll keep the static data for 'cases' or use 'report-summary/daily' as a placeholder if applicable.
+        // Assuming 'cases' is similar to 'alerts' for demonstration, using daily summary
+        apiUrl = 'http://127.0.0.1:5001/report-summary/daily';
+        countElementId = 'cases-count';
+        percentElementId = 'cases-percent';
+        periodTextElementId = 'cases-period';
+        dropdownId = 'dropdownCases';
+        break;
+      default:
+        console.error("Invalid card type:", cardType);
+        return;
+    }
+
+    // Update dropdown button text
+    const dropdownButton = document.getElementById(dropdownId);
+    if (dropdownButton) {
+      dropdownButton.textContent = period;
+    }
+
+
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === "success" && data.data) {
+          const countElement = document.getElementById(countElementId);
+          // const percentElem = document.getElementById(percentElementId); // Percentages are harder without historical data
+          const periodElem = document.getElementById(periodTextElementId);
+
+          if (cardType === 'finished') {
+            const finishedReports = data.data.Finished_Reports; // From /report-summary/weekly, monthly, yearly
+            if (countElement) countElement.textContent = finishedReports !== undefined ? finishedReports : 'N/A';
+            if (periodElem) periodElem.textContent = `Total Finished Reports ${period.toLowerCase()}`;
+          } else if (cardType === 'alerts' || cardType === 'cases') {
+            // For alerts and cases, the /report-summary/daily endpoint gives Processed and Pending
+            // Assuming we take the last entry or aggregate for the period.
+            // This logic might need refinement based on your exact backend data structure for these summaries.
+            const latestSummary = data.data.length > 0 ? data.data[data.data.length - 1] : null;
+            if (latestSummary) {
+              const processed = latestSummary.Processed || 0;
+              const pending = latestSummary.Pending || 0;
+              if (countElement) countElement.textContent = `${processed} / ${pending}`;
+              if (periodElem) periodElem.textContent = `As of ${latestSummary.Date || 'today'}`;
+            } else {
+              if (countElement) countElement.textContent = `0 / 0`;
+              if (periodElem) periodElem.textContent = `No data for ${period.toLowerCase()}`;
+            }
+          }
+          // The percentage and "Since last month" texts are harder to calculate without previous period data from the backend.
+          // You'd need more elaborate backend endpoints to provide comparison data.
+          // For now, we omit setting `percentElem` from dynamic data unless backend supports it.
+        } else {
+          console.error(`API response for ${cardType} indicates an error or unexpected data structure:`, data);
+          // Fallback to static data if API call fails for summary cards
+          updateCardStatic(cardType, period);
+        }
+      })
+      .catch(error => {
+        console.error(`Error fetching ${cardType} data:`, error);
+        // Fallback to static data if API call fails for summary cards
+        updateCardStatic(cardType, period);
+      });
+  }
+
+  // Fallback function to use static data if API fails or for initial setup
+  function updateCardStatic(cardType, period) {
+    const data = {
+      finished: {
+        "This week": {
+          count: "135.4k",
+          percent: '<i class="ti ti-caret-up-filled"></i> 2.34%',
+          color: "text-success",
+          periodText: "Since last week"
+        },
+        "This month": {
+          count: "687.3k",
+          percent: '<i class="ti ti-caret-down-filled"></i> 9.19%',
+          color: "text-danger",
+          periodText: "Since last month"
+        },
+        "This year": {
+          count: "4.7M",
+          percent: '<i class="ti ti-caret-up-filled"></i> 17.42%',
+          color: "text-success",
+          periodText: "Since last year"
+        }
+      },
+      alerts: {
+        "This week": {
+          count: "45 / 8",
+          percent: '<i class="ti ti-caret-up-filled"></i> 5.12%',
+          color: "text-success",
+          periodText: "Since last week"
+        },
+        "This month": {
+          count: "40 / 10",
+          percent: '<i class="ti ti-caret-down-filled"></i> 34.19%',
+          color: "text-danger",
+          periodText: "Since last month"
+        },
+        "This year": {
+          count: "320 / 25",
+          percent: '<i class="ti ti-caret-up-filled"></i> 15.67%',
+          color: "text-success",
+          periodText: "Since last year"
+        }
+      },
+      cases: {
+        "This week": {
+          count: "25 / 12",
+          percent: '<i class="ti ti-caret-up-filled"></i> 8.45%',
+          color: "text-success",
+          periodText: "Since last week"
+        },
+        "This month": {
+          count: "20 / 10",
+          percent: '<i class="ti ti-caret-down-filled"></i> 23.19%',
+          color: "text-danger",
+          periodText: "Since last month"
+        },
+        "This year": {
+          count: "180 / 80",
+          percent: '<i class="ti ti-caret-up-filled"></i> 28.73%',
+          color: "text-success",
+          periodText: "Since last year"
+        }
+      }
+    };
+
+    const selected = data[cardType][period];
+
+    // Update dropdown button text
+    if (cardType === 'finished') {
+      document.getElementById('dropdownFinished').textContent = period;
+      document.getElementById('finished-count').textContent = selected.count;
+      const percentElem = document.getElementById('finished-percent');
+      percentElem.innerHTML = selected.percent;
+      percentElem.className = `fw-medium ${selected.color}`;
+      document.getElementById('finished-period').textContent = selected.periodText;
+    } else if (cardType === 'alerts') {
+      document.getElementById('dropdownAlerts').textContent = period;
+      document.getElementById('alerts-count-display').textContent = selected.count;
+      const percentElem = document.getElementById('alerts-percent');
+      percentElem.innerHTML = selected.percent;
+      percentElem.className = `fw-medium ${selected.color}`;
+      document.getElementById('alerts-period').textContent = selected.periodText;
+    } else if (cardType === 'cases') {
+      document.getElementById('dropdownCases').textContent = period;
+      document.getElementById('cases-count').textContent = selected.count;
+      const percentElem = document.getElementById('cases-percent');
+      percentElem.innerHTML = selected.percent;
+      percentElem.className = `fw-medium ${selected.color}`;
+      document.getElementById('cases-period').textContent = selected.periodText;
+    }
+  }
+
+
+  // Update notification count based on alerts pending
+  function updateNotificationCount() {
+    // Fetch pending alerts from your backend
+    fetch('http://127.0.0.1:5001/pending') // This endpoint provides 'reports' with id, status, train
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.reports) {
+          // Assuming 'pending' endpoint returns all pending cases
+          // You might need to filter by a specific 'status' if it returns all
+          const pendingCount = data.reports.length; // Or filter if 'status' field is present and indicates 'pending'
+
+          const alertsCountElement = document.getElementById('alerts-count'); // This might be for a badge in the header/sidebar
+          const notificationAlertsCountElement = document.getElementById('notification-alerts-count'); // This might be for a specific notification area
+
+          if (alertsCountElement) {
+            alertsCountElement.textContent = pendingCount;
+            alertsCountElement.style.display = pendingCount > 0 ? 'flex' : 'none';
+          }
+          if (notificationAlertsCountElement) {
+            notificationAlertsCountElement.textContent = pendingCount;
+          }
+        } else {
+          console.error("API response for pending alerts is malformed:", data);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching pending alerts:', err);
+        // Fallback to a default if fetch fails
+        if (document.getElementById('alerts-count')) document.getElementById('alerts-count').textContent = '0';
+        if (document.getElementById('notification-alerts-count')) document.getElementById('notification-alerts-count').textContent = '0';
+      });
+  }
+
+
+  // Initial fetch and render when the page loads
+  document.addEventListener('DOMContentLoaded', function () {
+    fetchAndRenderTrainReport('week'); // Load weekly data by default
+
+    // Set up click handlers for the dropdowns to fetch new data
+    document.querySelectorAll('#dropdownFinished + ul .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        const period = event.target.textContent;
+        updateCard('finished', period);
+      });
+    });
+
+    document.querySelectorAll('#dropdownAlerts + ul .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        const period = event.target.textContent;
+        updateCard('alerts', period);
+      });
+    });
+
+    document.querySelectorAll('#dropdownCases + ul .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        const period = event.target.textContent;
+        updateCard('cases', period);
+      });
+    });
+
+    // Initial load for the summary cards
+    updateCard('finished', 'This month');
+    updateCard('alerts', 'This month');
+    updateCard('cases', 'This month');
+    updateNotificationCount();
+  });
+
+
+  // Fetch station names from the backend and populate the dropdown
+  document.addEventListener('DOMContentLoaded', function () {
+    const stationSelect = document.getElementById('station-select');
+
+    // **CHANGED: Use the new /api/station-dropdown endpoint**
+    fetch('http://127.0.0.1:5001/api/station-dropdown')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Clear existing options
+        stationSelect.innerHTML = '<option selected disabled>Select a station</option>';
+
+        // Populate dropdown with station names and codes
+        if (Array.isArray(data)) {
+          data.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.id; // Use Station_ID as the value
+            // Display as "Station_Name (Station_Code)"
+            option.textContent = `${station.Station_Name} (${station.Station_Code})`;
+            stationSelect.appendChild(option);
+          });
+        } else {
+          console.warn("Station data format unexpected:", data);
+          stationSelect.innerHTML = '<option selected disabled>No stations found</option>';
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching stations for dropdown:', err);
+        stationSelect.innerHTML = '<option selected disabled>Failed to load stations</option>';
+      });
+  });
+</script>
+
+<script src="{% static 'js/components/map.js' %}"></script>
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC367b7t3KcJ9jlVx0J1os4P1EBgzhll-c&callback=initMap"></script>
+{% endblock extra_javascript %}

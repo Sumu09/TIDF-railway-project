@@ -1,0 +1,438 @@
+{% extends 'vertical.html' %}
+
+{% load static i18n %}
+
+{% include 'partials/topbar-ground-staff.html' %}
+{% include 'partials/sidenav-ground-staff.html' %}
+
+{% block title %}Train Report - {{ train_name }}{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '/vendor/gridjs/theme/mermaid.min.css' %}">
+<style>
+    .toolbar {
+        margin-bottom: 20px;
+        text-align: right;
+    }
+
+    .btn-print {
+        padding: 8px 16px;
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-print:hover {
+        background-color: #0a58ca;
+        color: white;
+    }
+
+    .btn-back {
+        padding: 8px 16px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+    }
+
+    .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 20px;
+    }
+
+    .train-name-side {
+        font-size: 28px;
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 8px;
+    }
+
+    .station-details {
+        font-size: 16px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    table.pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table.pdf-table th,
+    table.pdf-table td {
+        border: 1px solid #dee2e6;
+        padding: 12px 8px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    table.pdf-table th {
+        background-color: #eef2f9;
+        font-weight: 600;
+    }
+
+    .print-header {
+        display: none;
+    }
+
+    @media print {
+
+        nav,
+        aside,
+        footer,
+        .page-header,
+        .topbar,
+        .toolbar,
+        .btn-back,
+        /* .sidenav-menu {
+            display: none !important;
+        } */
+
+        body {
+            margin: 0;
+            font-size: 12px;
+        }
+
+        .pdf-table {
+            font-size: 11px;
+        }
+
+        .report-header {
+            display: none !important;
+        }
+
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .print-train-name-side {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .print-station-details {
+            font-size: 14px;
+            margin: 0;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+{% block page_content %}
+
+<div class="toolbar mb-4">
+    <a href="{% url 'pages:dynamic_pages' template_name='ground-staff' %}" class="btn-back mt-2">← Back to Trains</a>
+    <button class="btn-print mt-2" onclick="window.print()">🖨️ Print Report</button>
+</div>
+
+<!-- Print Header (only visible when printing) -->
+<div class="print-header">
+    <div class="print-train-name-side" id="print-train-name-side">
+        Loading...
+    </div>
+    <div class="print-station-details" id="print-station-details">
+        Loading...
+    </div>
+</div>
+
+<!-- Screen Header -->
+<div class="report-header">
+    <div class="train-name-side" id="train-name-side">
+        Loading...
+    </div>
+    <div class="station-details" id="station-details">
+        Loading...
+    </div>
+</div>
+
+<!-- Summary Table -->
+<table class="pdf-table">
+    <thead>
+        <tr>
+            <th>Train Number</th>
+            <th>Side</th>
+            <th>Total Door Detected</th>
+            <th>OTLI-SI</th>
+            <th>OTLI-SM</th>
+            <th>LI-SI</th>
+            <th>LI-SM</th>
+            <th>Broken-SI</th>
+            <th>Broken-SM</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="summary-row">
+            <td colspan="9" style="text-align: center; color: #6c757d;">Loading train data...</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Detailed Door Information Table with Images -->
+<table class="pdf-table">
+    <thead>
+        <tr>
+            <th style="width: 15%;">Coach Position</th>
+            <th style="width: 15%;">Door Number</th>
+            <th style="width: 20%;">Wagon Number</th>
+            <th style="width: 20%;">Marking</th>
+            <th style="width: 30%;">Image</th>
+        </tr>
+    </thead>
+    <tbody id="door-details-tbody">
+        <tr>
+            <td colspan="5" style="text-align: center; color: #6c757d; padding: 20px;">Loading door details...</td>
+        </tr>
+    </tbody>
+</table>
+
+<div style="margin-top: 40px; text-align: center; font-size: 12px; color: #6c757d;">
+    <p>This report was generated automatically by the System</p>
+    <p id="generation-info">Generated on: <span id="current-date"></span> at <span id="current-time"></span>
+        &nbsp;|&nbsp; Station: <span id="station-name">Katihar Junction</span></p>
+</div>
+
+<script>
+    // Global variables for train data
+    let trainData = null;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportId = urlParams.get('id');
+
+        // Start time updates
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        if (reportId) {
+            // Fetch data from Flask API using report ID
+            fetch(`http://127.0.0.1:5000/train-report?id=${encodeURIComponent(reportId)}`, {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("authToken")
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Train report data received:', data); // Debug log
+                    trainData = data;
+                    updateReportContent(data);
+                    document.title = `Ground Staff Report - ${data.Train_Name || 'Unknown Train'}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching train report data:', error);
+                    loadFallbackData('Unknown Train', 'Unknown', '1');
+                });
+        } else {
+            // If no ID, fetch first available report
+            fetch(`http://127.0.0.1:5000/train-report`, {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("authToken")
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Train report data received (no ID):', data); // Debug log
+                    trainData = data;
+                    updateReportContent(data);
+                    document.title = `Ground Staff Report - ${data.Train_Name || 'Unknown Train'}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching train report data:', error);
+                    loadFallbackData('Unknown Train', 'Unknown', '1');
+                });
+        }
+    });
+
+    function updateDateTime() {
+        // Only update the clock at the bottom, not the report header
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        const dateStr = now.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        const currentTimeEl = document.getElementById('current-time');
+        const currentDateEl = document.getElementById('current-date');
+        if (currentTimeEl) currentTimeEl.textContent = timeStr;
+        if (currentDateEl) currentDateEl.textContent = dateStr;
+    }
+
+    function updateHeaderElements(data) {
+        // Use report data for Station, Time, Date
+        const trainNameSide = `Train Name: ${data.Train_Name || 'Unknown'} - Side: Right Side`;
+        // Use Station_Code, Time, Date from report
+        let stationName = data.Station_Code || 'Unknown';
+        // If you want to resolve Station_Code to Station_Name, you need to fetch it from backend
+        let timeStr = data.Time ? formatTime(data.Time) : 'Unknown';
+        let dateStr = data.Date ? formatDate(data.Date) : 'Unknown';
+        const stationDetails = `Station: ${stationName}    Time: ${timeStr}    Date: ${dateStr}`;
+
+        // Update all header elements
+        const trainNameSideElements = [
+            document.getElementById('train-name-side'),
+            document.getElementById('print-train-name-side')
+        ];
+        trainNameSideElements.forEach(el => {
+            if (el) el.textContent = trainNameSide;
+        });
+
+        const stationDetailsElements = [
+            document.getElementById('station-details'),
+            document.getElementById('print-station-details')
+        ];
+        stationDetailsElements.forEach(el => {
+            if (el) el.textContent = stationDetails;
+        });
+    }
+
+    // Helper to format time from "HH:MM:SS" or ISO string
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        // If already formatted, return as is
+        if (/\d{1,2}:\d{2} ?[APMapm]{2}/.test(timeStr)) return timeStr;
+        // If ISO (e.g. "12:00:00"), format to 12:00 PM
+        const [h, m, s] = timeStr.split(':');
+        if (h !== undefined && m !== undefined) {
+            let hour = parseInt(h, 10);
+            const minute = m;
+            let ampm = 'AM';
+            if (hour >= 12) {
+                ampm = 'PM';
+                if (hour > 12) hour -= 12;
+            }
+            if (hour === 0) hour = 12;
+            return `${hour}:${minute} ${ampm}`;
+        }
+        return timeStr;
+    }
+
+    // Helper to format date from "YYYY-MM-DD" or ISO string
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        // If already formatted, return as is
+        if (/\d{2}\/\d{2}\/\d{4}/.test(dateStr)) return dateStr;
+        // If ISO (e.g. "2025-07-14"), format to DD/MM/YYYY
+        const [y, m, d] = dateStr.split('-');
+        if (y && m && d) {
+            return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+        }
+        return dateStr;
+    }
+
+    function updateReportContent(data) {
+        // Update headers
+        updateHeaderElements(data);
+
+        // Update station name
+        const stationNameEl = document.getElementById('station-name');
+        if (stationNameEl) stationNameEl.textContent = data.Station_Code || 'Unknown Station';
+
+        // Update summary table with actual DB data, leave blank if not available
+        const summaryRow = document.getElementById('summary-row');
+        if (summaryRow) {
+            summaryRow.innerHTML = `
+            <td>${data.Report_ID || ''}</td>
+            <td>Right Side</td>
+            <td>${data.Door_No || ''}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        `;
+        }
+
+        // Update door details table - show single row with available data, rest blank
+        const detailsTableBody = document.getElementById('door-details-tbody');
+        if (detailsTableBody) {
+            detailsTableBody.innerHTML = `
+            <tr>
+                <td>${data.Coach_Position || ''}</td>
+                <td>${data.Door_No || ''}</td>
+                <td>${data.Wagon_No || ''}</td>
+                <td>${data.Report_Remark || ''}</td>
+                <td>
+                    ${data.Image_Link && data.Image_Link !== 'null' && data.Image_Link.trim() !== '' ?
+                    `<img src="${data.Image_Link}" alt="Train Door Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                             style="width: 120px; height: 80px; object-fit: cover; border-radius: 4px;
+                                    border: 1px solid #dee2e6;">
+                        <div style="width: 120px; height: 80px; background-color: #f8f9fa;
+                                    border: 1px dashed #dee2e6; display: none; align-items: center;
+                                    justify-content: center; border-radius: 4px; margin: 0 auto;">
+                            <span style="font-size: 12px; color: #6c757d;">Image Error</span>
+                        </div>` :
+                    `<div style="width: 120px; height: 80px; background-color: #f8f9fa;
+                                    border: 1px dashed #dee2e6; display: flex; align-items: center;
+                                    justify-content: center; border-radius: 4px; margin: 0 auto;">
+                            <span style="font-size: 12px; color: #6c757d;">No Image</span>
+                        </div>`
+                }
+                </td>
+            </tr>
+        `;
+        }
+    }
+
+    function loadFallbackData(trainName, trainStatus, trainId) {
+        const fallbackData = {
+            train_name: trainName || 'Unknown Train',
+            train_side: 'Unknown Side',
+            train_number: `Unknown Number`,
+            station_name: 'Unknown Junction',
+            current_time: new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }),
+            current_date: new Date().toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }),
+            total_doors: 20,
+            otli_si: 8,
+            otli_sm: 6,
+            li_si: 3,
+            li_sm: 2,
+            broken_si: 1,
+            broken_sm: 0,
+            door_details: Array.from({ length: 20 }, (_, i) => ({
+                position: i + 1,
+                door_number: i + 1,
+                wagon_number: `WG${Math.floor(i / 4 + 1).toString().padStart(3, '0')}`,
+                marking: ['OTLI-SI', 'OTLI-SM', 'LI-SI', 'LI-SM', 'Broken-SI'][i % 5],
+                image: i % 3 === 0 ? '' : `https://via.placeholder.com/120x80/007bff/ffffff?text=Door${i + 1}`
+            }))
+        };
+
+        trainData = fallbackData;
+        updateReportContent(fallbackData);
+    }
+</script>
+
+{% endblock page_content %}

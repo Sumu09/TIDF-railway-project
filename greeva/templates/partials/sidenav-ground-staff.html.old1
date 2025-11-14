@@ -1,0 +1,29 @@
+{% load static i18n %}
+<!-- Sidenav Menu Start -->
+<div class="sidenav-menu">
+
+    <!-- Brand Logo -->
+    <a href="{% url 'pages:dashboard' %}" class="logo">
+        <span class="logo-light">
+            <span class="logo-lg">
+                <img src="{% static '/images/IITG_logo_white.png' %}" alt="IITG logo" style="width: 40px; height: 40px; margin-right: 5px;">
+                <span class="text-white fw-bold">IITG</span>
+            </span>
+            <span class="logo-sm">
+                <img src="{% static '/images/IITG_logo_white.png' %}" alt="IITG small logo" style="width: 40px; height: 40px;">
+                <span class="text-white fw-bold">IITG</span>
+            </span>
+        </span>
+    </a>
+
+    <!-- Sidebar Hover Menu Toggle Button -->
+    <button class="button-sm-hover">
+        <i class="ti ti-circle align-middle"></i>
+    </button>
+
+    <!-- Full Sidebar Menu Close Button -->
+    <button class="button-close-fullsidebar">
+        <i class="ti ti-x align-middle"></i>
+    </button>
+</div>
+<!-- Sidenav Menu End -->

@@ -1,0 +1,402 @@
+{% extends 'vertical.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard{% endblock title %}
+{% block extra_css %}
+
+<style>
+  .gridjs .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-color: #0d6efd !important;
+  }
+</style>
+<style>
+  /* Fix overlap of Grid.js search icon and input text */
+  .gridjs .gridjs-search input {
+    padding-left: 2rem !important;
+    /* Add spacing between icon and text */
+  }
+
+  .gridjs .gridjs-search svg {
+    left: 0.6rem !important;
+    /* Move icon slightly right */
+  }
+</style>
+
+<link href="{% static '/vendor/jsvectormap/jsvectormap.min.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block page_title %}
+{% include 'partials/page-title.html' with title="Zonal Head" %}
+{% endblock page_title %}
+
+{% block page_content %}
+
+<div class="container-fluid">
+  <div class="row g-4">
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Finished Report</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownFinished">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">This week</a></li>
+                <li><a class="dropdown-item" href="#">This month</a></li>
+                <li><a class="dropdown-item" href="#">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:case-round-minimalistic-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="finished-count">10</h3>
+            <iconify-icon icon="solar:cart-2-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3 ">
+              <span id="finished-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 9.19%
+              </span>
+              <span id="finished-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Alerts Processed / Alerts Pending</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownAlerts">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">This week</a></li>
+                <li><a class="dropdown-item" href="#">This month</a></li>
+                <li><a class="dropdown-item" href="#">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:bill-list-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="alerts-count-display">40 / 10</h3>
+            <iconify-icon icon="solar:banknote-2-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3">
+              <span id="alerts-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 34.19%
+              </span>
+              <span id="alerts-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card overflow-hidden h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="text-muted fs-13 text-uppercase">Cases Completed / Cases Initiated</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" id="dropdownCases">
+                Sort date
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">This week</a></li>
+                <li><a class="dropdown-item" href="#">This month</a></li>
+                <li><a class="dropdown-item" href="#">This year</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 my-2 py-1">
+            <div class="user-img fs-42 flex-shrink-0">
+              <span class="avatar-title text-bg-primary rounded-circle fs-22">
+                <iconify-icon icon="solar:wallet-money-bold-duotone"></iconify-icon>
+              </span>
+            </div>
+            <h3 class="mb-0 fw-bold" id="cases-count">20 / 10</h3>
+            <iconify-icon icon="solar:cardholder-line-duotone"
+              class="ms-auto display-1 position-absolute opacity-25 text-muted widget-icon"></iconify-icon>
+            <div class="d-flex justify-content-start align-items-center gap-2 mt-4 position-absolute bottom-0 pb-3 ">
+              <span id="cases-percent" class="fw-medium text-danger" style="font-size: 13px;">
+                <i class="ti ti-caret-down-filled"></i> 23.19%
+              </span>
+              <span id="cases-period" class="text-muted" style="font-size: 13px;">
+                Since last month
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="mb-3">
+        <label for="station-select" class="form-label fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1rem;">Select
+          Station</label><br>
+        <select id="station-select" class="  form-select-sm" aria-label="Select Station">
+          <option selected disabled>Loading stations...</option>
+        </select>
+      </div>
+
+      <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+      <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+      <div class="mb-3">
+        <h5 class="fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1.1rem;">Train
+          Report Table</h5>
+      </div>
+
+      <div id="table-gridjs"></div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="mb-3">
+        <h5 class="fw-bold text-uppercase text-primary"
+          style="font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.2px; font-size: 1.1rem;">Station Map
+        </h5>
+      </div>
+      <div id="map" style="height: 500px; width: 100%;"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  // ========================================================================= //
+  //  ✅ CONSOLIDATED SCRIPT FOR ZONAL HEAD PAGE
+  //  This single block contains all necessary functions and event listeners.
+  // ========================================================================= //
+
+  // ------------------------------------------------------------------------- //
+  //  1. FUNCTION DEFINITIONS
+  // ------------------------------------------------------------------------- //
+
+  /**
+   * Handles user input for updating remarks in the table.
+   */
+  function handleRemarksInput(element) {
+    const currentText = element.innerText === "Click to add" ? "" : element.innerText;
+    const input = prompt("Enter remark:", currentText);
+    if (input !== null) {
+      element.innerText = input;
+      const row = element.closest('tr');
+      const date = row.cells[0].innerText;
+      const trainName = row.cells[2].innerText;
+
+      fetch('http://127.0.0.1:5000/update-remark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Date: date, Train_Name: trainName, Remarks: input }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status !== "success") {
+            console.error("Error updating remark:", data.message);
+            element.innerText = currentText; // Revert on failure
+          }
+        })
+        .catch(error => {
+          console.error('Network or server error:', error);
+          element.innerText = currentText; // Revert on failure
+        });
+    }
+  }
+
+  let trainReportGrid; // Global variable for the Grid.js instance
+
+  /**
+   * Fetches data and renders the main train report table.
+   */
+  function fetchAndRenderTrainReport(period = 'week') {
+    const apiUrl = `http://127.0.0.1:5000/train-report/${period}`;
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success" && Array.isArray(data.data)) {
+          const processedData = data.data.map(item => [item.Date, item.Train_Status, item.Train_Name, item.Time, item.Remarks, ""]);
+          if (trainReportGrid) {
+            trainReportGrid.updateConfig({ data: processedData }).forceRender();
+          } else {
+            trainReportGrid = new gridjs.Grid({
+              columns: [
+                { name: 'Date', width: '100px', formatter: (cell) => gridjs.html(`<span class="fw-semibold">${cell}</span>`) },
+                { name: 'Status', width: '150px' },
+                { name: 'Train Name', width: '200px' },
+                { name: 'Time', width: '100px' },
+                { name: 'Remarks', width: '180px', formatter: (cell, row) => gridjs.html(`<span style="cursor: pointer;" onclick="handleRemarksInput(this)">${cell || '<i>Click to add</i>'}</span>`) },
+                { name: 'Generate Case', width: '120px', formatter: () => gridjs.html('<input type="checkbox" />') },
+              ],
+              pagination: { limit: 5 },
+              sort: true,
+              search: true,
+              data: processedData
+            }).render(document.getElementById("table-gridjs"));
+          }
+        }
+      })
+      .catch(error => console.error("Error fetching train report data:", error));
+  }
+
+  /**
+   * Updates the summary cards (Finished, Alerts, Cases) with data from the backend.
+   */
+  function updateCard(cardType, period) {
+    let countElementId, periodTextElementId, dropdownId;
+    const periodParam = period.toLowerCase().replace('this ', '');
+    const apiUrl = `http://127.0.0.1:5000/report-summary/${periodParam}`;
+
+    switch (cardType) {
+      case 'finished':
+        countElementId = 'finished-count';
+        periodTextElementId = 'finished-period';
+        dropdownId = 'dropdownFinished';
+        break;
+      case 'alerts':
+        countElementId = 'alerts-count-display';
+        periodTextElementId = 'alerts-period';
+        dropdownId = 'dropdownAlerts';
+        break;
+      case 'cases':
+        countElementId = 'cases-count';
+        periodTextElementId = 'cases-period';
+        dropdownId = 'dropdownCases';
+        break;
+      default: return;
+    }
+
+    const dropdownButton = document.getElementById(dropdownId);
+    if (dropdownButton) dropdownButton.textContent = period;
+
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success" && data.data) {
+          const countElement = document.getElementById(countElementId);
+          const periodElem = document.getElementById(periodTextElementId);
+          const reportCount = data.data.Finished_Reports;
+
+          if (countElement) {
+            if (cardType === 'finished') {
+              countElement.textContent = reportCount !== undefined ? reportCount : 'N/A';
+            } else {
+              countElement.textContent = `${reportCount !== undefined ? reportCount : 'N/A'} / ?`;
+            }
+          }
+          if (periodElem) periodElem.textContent = `Total for ${period.toLowerCase()}`;
+        }
+      })
+      .catch(error => console.error(`Fetch error for ${cardType}:`, error));
+  }
+
+  // (Your updateCardStatic and updateNotificationCount functions would also go here if needed)
+
+
+  // ------------------------------------------------------------------------- //
+  //  2. MAIN EVENT LISTENER - TRIGGERS WHEN THE PAGE IS READY
+  // ------------------------------------------------------------------------- //
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // SETUP EVENT LISTENERS
+    document.querySelectorAll('#dropdownFinished + .dropdown-menu .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        updateCard('finished', event.target.textContent);
+      });
+    });
+
+    document.querySelectorAll('#dropdownAlerts + .dropdown-menu .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        updateCard('alerts', event.target.textContent);
+      });
+    });
+
+    document.querySelectorAll('#dropdownCases + .dropdown-menu .dropdown-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        updateCard('cases', event.target.textContent);
+      });
+    });
+
+    // POPULATE STATION DROPDOWN
+    const stationSelect = document.getElementById('station-select');
+    fetch('http://127.0.0.1:5000/api/station-dropdown')
+      .then(response => response.json())
+      .then(data => {
+        stationSelect.innerHTML = '<option selected disabled>Select a station</option>';
+        if (Array.isArray(data)) {
+          data.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.id;
+            option.textContent = `${station.Station_Name} (${station.Station_Code})`;
+            stationSelect.appendChild(option);
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching stations:', err);
+        stationSelect.innerHTML = '<option selected disabled>Failed to load stations</option>';
+      });
+
+    // INITIAL PAGE LOAD
+    fetchAndRenderTrainReport('week');
+    updateCard('finished', 'This month');
+    updateCard('alerts', 'This month');
+    updateCard('cases', 'This month');
+  });
+</script>
+
+
+{% endblock page_content %}
+
+{% block extra_javascript %}
+<script src="{% static '/vendor/apexcharts/apexcharts.min.js' %}"></script>
+
+<script src="{% static '/vendor/jsvectormap/jsvectormap.min.js' %}"></script>
+<script src="{% static '/vendor/jsvectormap/maps/world-merc.js' %}"></script>
+<script src="{% static '/vendor/jsvectormap/maps/world.js' %}"></script>
+
+<script src="{% static '/js/pages/dashboard.js' %}"></script>
+<script src="{% static '/js/components/map.js' %}"></script>
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC367b7t3KcJ9jlVx0J1os4P1EBgzhll-c&libraries=geometry&callback=initMap"> </script>
+{% endblock extra_javascript %}

@@ -1,0 +1,363 @@
+{% extends 'vertical.html' %}
+{% load static %}
+
+{% block title %}Calendar{% endblock title %}
+
+{% block extra_css %}
+{# FullCalendar Core CSS from local static files #}
+<link href="{% static 'vendor/fullcalendar/index.global.min.css' %}" rel="stylesheet">
+{# Font Awesome for Icons #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    :root {
+        /* Define colors for consistency */
+        --color-primary: #0d6efd;
+        --color-alerts: #007bff;
+        --color-cases-pending: #dc3545;
+        --color-cases-processed: #28a745;
+        --fc-border-color: #e9ecef;
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    /* --- Card and Button Styling --- */
+    .card {
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .05);
+        border: 1px solid var(--fc-border-color);
+    }
+
+    #createNewBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    /* --- FullCalendar Clean Styling --- */
+    .fc {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    /* Style all buttons to match the theme */
+    .fc .fc-button,
+    .fc .fc-button-primary {
+        background-color: var(--color-primary) !important;
+        border-color: var(--color-primary) !important;
+        color: white !important;
+        box-shadow: none !important;
+        text-transform: capitalize;
+        transition: background-color 0.2s ease;
+        font-weight: 500;
+    }
+
+    .fc .fc-button:hover,
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: #0b5ed7 !important;
+        border-color: #0a58ca !important;
+    }
+
+    .fc .fc-daygrid-day.fc-day-today {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    /* --- Custom Event Styling to Match Screenshot --- */
+
+    /* *** MODIFIED: Remove the default blue background from the event container *** */
+    .fc-daygrid-event {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .fc-event-main-container {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .fc-event-item {
+        padding: 5px 8px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        font-size: 0.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .fc-event-item.alerts {
+        background-color: var(--color-alerts);
+    }
+
+    .fc-event-item.pending {
+        background-color: var(--color-cases-pending);
+    }
+
+    .fc-event-item.processed {
+        background-color: var(--color-cases-processed);
+    }
+
+    /* --- Notification Styling --- */
+    .notification-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.25rem;
+        color: white;
+        z-index: 1060;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.4s ease-in-out;
+    }
+
+    .notification-toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .notification-toast.success {
+        background-color: var(--color-cases-processed);
+    }
+
+    .notification-toast.error {
+        background-color: var(--color-cases-pending);
+    }
+</style>
+{% endblock extra_css %}
+
+{% block page_title %}
+{% include 'partials/page-title.html' with title="Calendar" %}
+{% endblock page_title %}
+
+{% block page_content %}
+<div class="row">
+    <!-- Left Column for the Create Button -->
+    <div class="col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <button id="createNewBtn" class="btn btn-primary w-100">
+                    <i class="fas fa-plus"></i> Create New Train Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column for the Calendar -->
+    <div class="col-xl-9">
+        <div class="card">
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock page_content %}
+
+{% block modal %}
+<div class="modal fade" id="trainStatusModal" tabindex="-1" aria-labelledby="trainStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="trainStatusForm" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="trainStatusModalLabel">Add/Edit Train Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="event-id" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" id="event-date" name="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Number of Cases Processed</label>
+                        <input type="number" id="event-processed" name="processed" class="form-control" required min="0"
+                            value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Number of Cases Pending</label>
+                        <input type="number" id="event-pending" name="pending" class="form-control" required min="0"
+                            value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" id="event-remarks" name="remarks" class="form-control"
+                            placeholder="Optional remarks">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock modal %}
+
+{% block extra_javascript %}
+{# FullCalendar JS from local static files #}
+<script src="{% static 'vendor/fullcalendar/index.global.min.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const modalEl = document.getElementById('trainStatusModal');
+        const form = document.getElementById('trainStatusForm');
+        let modal;
+
+        // --- HELPER FUNCTIONS ---
+        function showNotification(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `notification-toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 3000);
+        }
+
+        function openStatusModal(data = {}) {
+            form.reset();
+            document.getElementById('trainStatusModalLabel').textContent = data.id ? 'Edit Train Status' : 'Add Train Status';
+            document.getElementById('event-id').value = data.id || '';
+            document.getElementById('event-date').value = data.date || new Date().toISOString().slice(0, 10);
+            document.getElementById('event-processed').value = data.processed || 0;
+            document.getElementById('event-pending').value = data.pending || 0;
+            document.getElementById('event-remarks').value = data.remarks || '';
+
+            if (!modal) {
+                if (typeof bootstrap !== 'undefined') {
+                    modal = new bootstrap.Modal(modalEl);
+                } else {
+                    showNotification('Modal library not loaded.', 'error');
+                    return;
+                }
+            }
+            modal.show();
+        }
+
+        // --- CALENDAR INITIALIZATION ---
+        if (!calendarEl) {
+            console.error("Calendar element not found!");
+            return;
+        }
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            themeSystem: 'bootstrap5',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            views: {
+                multiMonthYear: {
+                    type: 'multiMonth',
+                    duration: { years: 1 },
+                    buttonText: 'Year',
+                    dayMaxEvents: false // This disables the event limit for the year view
+                }
+            },
+            editable: true,
+
+            // --- DATA FETCHING ---
+            events: function (fetchInfo, successCallback, failureCallback) {
+                const apiUrl = 'http://127.0.0.1:5000/report-summary/daily';
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                        return response.json();
+                    })
+                    .then(body => {
+                        if (body.status !== 'success') throw new Error(body.message || 'Backend error.');
+                        const events = body.data.map(item => {
+                            const processed = parseInt(item.Processed, 10) || 0;
+                            const pending = parseInt(item.Pending, 10) || 0;
+                            return {
+                                id: item.Date,
+                                title: 'Daily Summary',
+                                start: item.Date,
+                                allDay: true,
+                                extendedProps: {
+                                    processed,
+                                    pending,
+                                    alerts: processed + pending,
+                                    remarks: item.Remarks || ''
+                                }
+                            };
+                        });
+                        successCallback(events);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching calendar data:', error);
+                        showNotification('Failed to load calendar data.', 'error');
+                        failureCallback(error);
+                    });
+            },
+
+            // --- RENDERING ---
+            eventContent: function (arg) {
+                const props = arg.event.extendedProps;
+                const container = document.createElement('div');
+                container.className = 'fc-event-main-container';
+
+                if (props.alerts > 0) container.innerHTML += `<div class="fc-event-item alerts">${props.alerts} Alerts</div>`;
+                if (props.pending > 0) container.innerHTML += `<div class="fc-event-item pending">${props.pending} Cases Pending</div>`;
+                if (props.processed > 0) container.innerHTML += `<div class="fc-event-item processed">${props.processed} Cases Processed</div>`;
+
+                return { domNodes: [container] };
+            },
+
+            // --- INTERACTIVITY ---
+            dateClick: function (info) {
+                openStatusModal({ date: info.dateStr });
+            },
+            eventClick: function (info) {
+                const props = info.event.extendedProps;
+                openStatusModal({
+                    id: info.event.id,
+                    date: info.event.startStr,
+                    processed: props.processed,
+                    pending: props.pending,
+                    remarks: props.remarks
+                });
+            }
+        });
+
+        calendar.render();
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('createNewBtn').addEventListener('click', () => {
+            openStatusModal();
+        });
+
+        // --- FORM SUBMISSION ---
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            showNotification('Save requires a backend endpoint.', 'error');
+            /*
+            const formData = new FormData(form);
+            // ... rest of your save logic
+            */
+        });
+    });
+</script>
+{% endblock extra_javascript %}

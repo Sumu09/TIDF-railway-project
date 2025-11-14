@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block title %}Log In{% endblock title %}
+{% block content %}
+
+<div class="auth-bg d-flex min-vh-100 justify-content-center align-items-center">
+    <div class="row g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
+        <div class="col-xl-4 col-lg-5 col-md-6">
+            <div class="card overflow-hidden text-center h-100 p-xxl-4 p-3 mb-0">
+                <a href="/" class="auth-brand mb-4 text-decoration-none">
+                    <img src="{% static '/images/IITG_logo_dark.png' %}" alt="dark logo" class="logo-dark">
+                    <h2>IIT Guwahati</h2>
+                </a>
+
+                <h4 class="fw-semibold mb-2 fs-18">Log in to your account</h4>
+
+                <form class="text-start mb-3" id="loginForm" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label" for="phone-number">Phone Number</label>
+                        <input type="tel" id="phone-number" name="phone-number" class="form-control"
+                            placeholder="Enter your phone number" maxlength="10" required />
+                        <div class="invalid-feedback" id="phone-error">
+                            Please enter a valid 10-digit phone number.
+                        </div>
+                        <div class="valid-feedback">
+                            Phone number is correct!
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="position-relative">
+                            <input type="password" id="password" name="password" class="form-control"
+                                placeholder="Enter your password" required />
+                            <button type="button"
+                                class="btn btn-link position-absolute end-0 top-50 translate-middle-y p-0 me-3"
+                                id="togglePassword" style="border: none; background: none">
+                                <i class="ti ti-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <div class="alert alert-warning mt-2 py-2 px-3" id="password-warning"
+                            style="display: none; font-size: 0.8rem;">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            Password must be at least 8 characters, contain 1 uppercase, 1 lowercase, 1 number, and 1
+                            special character.
+                        </div>
+                        <div class="valid-feedback" id="password-ok" style="display: none;">
+                            <i class="ti ti-circle-check me-1"></i> Password is okay!
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="checkbox-signin" />
+                            <label class="form-check-label" for="checkbox-signin">Remember me</label>
+                        </div>
+                        <a href="{% url 'pages:dynamic_pages' template_name='auth-recoverpw' %}"
+                            class="text-muted border-bottom border-dashed">Forgot Password</a>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary fw-semibold" type="submit" id="submitBtn">
+                            Login
+                        </button>
+                    </div>
+                </form>
+
+                <div id="response" class="text-danger fw-semibold mt-3"></div>
+
+                <p class="text-muted fs-14 mb-4">
+                    Don't have an account?
+                    <a href="{% url 'pages:dynamic_pages' template_name='auth-signup' %}"
+                        class="fw-semibold text-danger ms-1">Sign Up!</a>
+                </p>
+
+                <p class="mt-3 mb-0">
+                    <script>document.write(new Date().getFullYear())</script> © <span
+                        class="fw-bold text-decoration-underline text-uppercase text-reset fs-15">IITG</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static '/js/utils/jwt-auth.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is already logged in, redirect based on user type
+        if (JWT_AUTH.isAuthenticated()) {
+            // Try to get user type from JWT payload
+            let userType = null;
+            try {
+                const token = JWT_AUTH.getToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload && payload.user && payload.user.Type_of_User) {
+                        userType = payload.user.Type_of_User;
+                    }
+                }
+            } catch (e) { userType = null; }
+
+            // If not in JWT, fallback to /profile API
+            function redirectByUserType(type) {
+                let redirectUrl;
+                switch (type) {
+                    case 'GroundStaff':
+                        redirectUrl = "{% url 'pages:dynamic_pages' template_name='ground-staff' %}";
+                        break;
+                    case 'StationAdmin':
+                        redirectUrl = "{% url 'pages:dynamic_pages' template_name='station-admin' %}";
+                        break;
+                    case 'ZonalHead':
+                        redirectUrl = "{% url 'pages:dynamic_pages' template_name='zonal-head' %}";
+                        break;
+                    default:
+                        redirectUrl = "{% url 'pages:dynamic_pages' template_name='pages-404' %}";
+                }
+                window.location.href = redirectUrl;
+            }
+
+            if (userType) {
+                redirectByUserType(userType);
+                return;
+            } else {
+                // Fallback: fetch user profile from backend
+                JWT_AUTH.fetchWithAuth("http://127.0.0.1:5000/profile")
+                    .then(res => res && res.json ? res.json() : null)
+                    .then(data => {
+                        if (data && data.user && data.user.Type_of_User) {
+                            redirectByUserType(data.user.Type_of_User);
+                        } else {
+                            window.location.href = "{% url 'pages:dynamic_pages' template_name='ground-staff' %}";
+                        }
+                    })
+                    .catch(() => {
+                        window.location.href = "{% url 'pages:dynamic_pages' template_name='ground-staff' %}";
+                    });
+                return;
+            }
+        }
+
+        const form = document.getElementById("loginForm");
+        const phoneInput = document.getElementById("phone-number");
+        const passwordInput = document.getElementById("password");
+        const responseDiv = document.getElementById("response");
+        const submitBtn = document.getElementById("submitBtn");
+        const togglePassword = document.getElementById("togglePassword");
+        const eyeIcon = document.getElementById("eyeIcon");
+
+        let phoneValidationTimeout;
+        let passwordValidationTimeout;
+
+        // Toggle password visibility
+        togglePassword.addEventListener("click", function () {
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
+            eyeIcon.className = type === "text" ? "ti ti-eye-off" : "ti ti-eye";
+        });
+
+        // Phone number input validation
+        phoneInput.addEventListener('input', function () {
+            // Remove non-digits and limit to 10 characters
+            const phoneValue = this.value.replace(/\D/g, '').substring(0, 10);
+            this.value = phoneValue;
+
+            // Clear validation classes while typing
+            this.classList.remove('is-valid', 'is-invalid');
+
+            // Clear existing timeout
+            clearTimeout(phoneValidationTimeout);
+
+            // Set 800ms delay for validation
+            phoneValidationTimeout = setTimeout(() => {
+                validatePhoneNumber();
+            }, 800);
+        });
+
+        // Phone number blur validation
+        phoneInput.addEventListener('blur', function () {
+            clearTimeout(phoneValidationTimeout);
+            validatePhoneNumber();
+        });
+
+        function validatePhoneNumber() {
+            const phoneValue = phoneInput.value.replace(/\D/g, '');
+
+            if (phoneValue.length === 0) {
+                phoneInput.classList.remove('is-valid', 'is-invalid');
+            } else if (phoneValue.length === 10) {
+                phoneInput.classList.remove('is-invalid');
+                phoneInput.classList.add('is-valid');
+            } else {
+                phoneInput.classList.remove('is-valid');
+                phoneInput.classList.add('is-invalid');
+            }
+        }
+
+        // Password input validation
+        passwordInput.addEventListener('input', function () {
+            // Clear validation classes while typing
+            this.classList.remove('is-valid', 'is-invalid');
+
+            // Clear existing timeout
+            clearTimeout(passwordValidationTimeout);
+
+            // Set delay for validation
+            passwordValidationTimeout = setTimeout(() => {
+                validatePassword();
+            }, 300);
+        });
+
+        // Password blur validation
+        passwordInput.addEventListener('blur', function () {
+            clearTimeout(passwordValidationTimeout);
+            validatePassword();
+        });
+
+        function validatePassword() {
+            const password = passwordInput.value;
+            const passwordWarning = document.getElementById('password-warning');
+            const passwordOk = document.getElementById('password-ok');
+
+            // Password requirements
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            const isValid = hasLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
+
+
+            if (password.length === 0) {
+                passwordInput.classList.remove('is-valid', 'is-invalid');
+                passwordWarning.style.display = 'none';
+                passwordOk.style.display = 'none';
+                return;
+            }
+            if (isValid) {
+                passwordInput.classList.remove('is-invalid');
+                passwordInput.classList.add('is-valid');
+                passwordWarning.style.display = 'none';
+                passwordOk.style.display = 'block';
+            } else {
+                passwordInput.classList.remove('is-valid');
+                passwordInput.classList.add('is-invalid');
+                passwordWarning.style.display = 'block';
+                passwordOk.style.display = 'none';
+            }
+        }
+
+        function resetRequirementIndicators() {
+            // Only hide warning and green feedback
+            const passwordWarning = document.getElementById('password-warning');
+            const passwordOk = document.getElementById('password-ok');
+            passwordWarning.style.display = 'none';
+            passwordOk.style.display = 'none';
+        }
+
+        function isValidPhone(phone) {
+            return /^[0-9]{10}$/.test(phone);
+        }
+
+        function isValidPassword(password) {
+            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/.test(password);
+        }
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value.trim();
+            responseDiv.textContent = "";
+
+            // Clear any pending timeouts
+            clearTimeout(phoneValidationTimeout);
+            clearTimeout(passwordValidationTimeout);
+
+            // Force validation on submit
+            let isValid = true;
+
+            if (!isValidPhone(phone)) {
+                phoneInput.classList.add('is-invalid');
+                phoneInput.classList.remove('is-valid');
+                responseDiv.textContent = "Invalid phone number. Must be exactly 10 digits.";
+                isValid = false;
+            } else {
+                phoneInput.classList.add('is-valid');
+                phoneInput.classList.remove('is-invalid');
+            }
+
+            if (!isValidPassword(password)) {
+                passwordInput.classList.add('is-invalid');
+                passwordInput.classList.remove('is-valid');
+                if (isValid) { // Only show if phone is valid
+                    responseDiv.textContent = "Password must have 1 uppercase, 1 lowercase, 1 number, 1 special character and be 8+ characters long.";
+                }
+                isValid = false;
+            } else {
+                passwordInput.classList.add('is-valid');
+                passwordInput.classList.remove('is-invalid');
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Disable button and show spinner
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+            submitBtn.disabled = true;
+
+            fetch("http://127.0.0.1:5000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ Ph_No: phone, Password: password }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    responseDiv.classList.remove("text-danger", "text-success");
+
+                    if (data.status === "success") {
+                        responseDiv.classList.add("text-success");
+                        responseDiv.textContent = data.message;
+
+                        // Save JWT token
+                        JWT_AUTH.setToken(data.access_token);
+
+                        // Redirect based on user type
+                        const userType = data.user.Type_of_User;
+                        let redirectUrl;
+
+                        switch (userType) {
+                            case 'GroundStaff':
+                                redirectUrl = "{% url 'pages:dynamic_pages' template_name='ground-staff' %}";
+                                break;
+                            case 'StationAdmin':
+                                redirectUrl = "{% url 'pages:dynamic_pages' template_name='station-admin' %}";
+                                break;
+                            case 'ZonalHead':
+                                redirectUrl = "{% url 'pages:dynamic_pages' template_name='zonal-head' %}";
+                                break;
+                            default:
+                                redirectUrl = "{% url 'pages:dynamic_pages' template_name='pages-404' %}";
+                        }
+
+                        // Small delay to show success message, then redirect
+                        setTimeout(() => {
+                            window.location.href = redirectUrl;
+                        }, 1500);
+                    } else {
+                        responseDiv.classList.add("text-danger");
+                        responseDiv.textContent = data.message;
+                    }
+                })
+                .catch(() => {
+                    responseDiv.classList.remove("text-success");
+                    responseDiv.classList.add("text-danger");
+                    responseDiv.textContent = "An error occurred during login.";
+                })
+                .finally(() => {
+                    if (!responseDiv.classList.contains("text-success")) {
+                        submitBtn.innerHTML = "Login";
+                        submitBtn.disabled = false;
+                    }
+                });
+        });
+    });
+</script>
+
+<style>
+    .shake {
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+
+        0%,
+        20%,
+        40%,
+        60%,
+        80% {
+            transform: translateX(-5px);
+        }
+
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+            transform: translateX(5px);
+        }
+    }
+
+    .position-relative .btn-link {
+        z-index: 5;
+    }
+
+    .btn-link:focus {
+        box-shadow: none;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-control.is-invalid~.invalid-feedback {
+        display: block;
+    }
+
+    .valid-feedback {
+        display: none;
+        color: #28a745;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-control.is-valid~.valid-feedback {
+        display: block;
+    }
+
+    .invalid-feedback ul li {
+        margin-bottom: 2px;
+        transition: color 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .invalid-feedback .mb-2 {
+        font-weight: 600;
+        color: #dc3545;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .form-control.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.7-.7 1.4-1.4.7-.7-.7-.7L2.9 3 2.3 3.7l-.7.7 1.4 1.4z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .auth-brand {
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .auth-brand img {
+        height: 80px;
+        /* Increased size */
+        margin-right: 8px;
+        transition: height 0.2s;
+    }
+
+    .auth-brand h2 {
+        font-family: 'Inter', Arial, sans-serif;
+        font-weight: 600;
+        font-size: 2rem;
+        margin-bottom: 0;
+        color: #2d3a4a;
+    }
+</style>
+
+
+{% endblock content %}

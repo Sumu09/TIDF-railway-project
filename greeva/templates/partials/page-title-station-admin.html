@@ -1,0 +1,22 @@
+{% if title %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="fs-24 fw-bold mb-0 text-primary" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">{{ title }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else  %}
+<div class="page-title-head d-flex align-items-center">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="fs-24 fw-bold mb-0 text-primary" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">Welcome</h4>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
